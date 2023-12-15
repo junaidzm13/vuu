@@ -1,3 +1,4 @@
+import { isNotNullOrUndefined } from "../ts-utils";
 import { DatePattern, DateTimePattern, TimePattern } from "./types";
 
 type DateTimeFormatConfig = {
@@ -55,18 +56,36 @@ const formatConfigByDatePatterns: Record<DatePattern, DateTimeFormatConfig> = {
   },
 };
 
-const formatConfigByDateTimePatterns: Record<
-  DateTimePattern,
-  DateTimeFormatConfig
-> = { ...formatConfigByDatePatterns, ...formatConfigByTimePatterns };
+function getFormatConfigs(pattern: DateTimePattern) {
+  return [
+    isNotNullOrUndefined(pattern["date"])
+      ? formatConfigByDatePatterns[pattern["date"]]
+      : null,
+    isNotNullOrUndefined(pattern["time"])
+      ? formatConfigByTimePatterns[pattern["time"]]
+      : null,
+  ];
+}
+
+function applyFormatting(
+  d: Date,
+  opts: Pick<DateTimeFormatConfig, "postProcessor"> & {
+    dateTimeFormat: Intl.DateTimeFormat;
+  }
+): string {
+  const { dateTimeFormat, postProcessor } = opts;
+  const dateStr = dateTimeFormat.format(d);
+  return postProcessor ? postProcessor(dateStr) : dateStr;
+}
 
 export function formatDate(pattern: DateTimePattern): (d: Date) => string {
-  const { locale, options, postProcessor } =
-    formatConfigByDateTimePatterns[pattern];
-  const dateTimeFormat = Intl.DateTimeFormat(locale, options);
+  const formattingOpts = getFormatConfigs(pattern)
+    .filter(isNotNullOrUndefined)
+    .map((c) => ({
+      dateTimeFormat: Intl.DateTimeFormat(c.locale, c.options),
+      postProcessor: c.postProcessor,
+    }));
 
-  return (d) => {
-    const dateStr = dateTimeFormat.format(d);
-    return postProcessor ? postProcessor(dateStr) : dateStr;
-  };
+  return (d) =>
+    formattingOpts.map((opts) => applyFormatting(d, opts)).join(" ");
 }
