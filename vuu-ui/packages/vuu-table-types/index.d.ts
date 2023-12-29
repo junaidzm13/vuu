@@ -9,6 +9,7 @@ import type {
 import type { VuuDataRow } from "@finos/vuu-protocol-types";
 import type { ValueFormatter } from "@finos/vuu-table";
 import type { ClientSideValidationChecker } from "@finos/vuu-ui-controls";
+import type { DateTimePattern } from "@finos/vuu-utils";
 import type { FunctionComponent, MouseEvent } from "react";
 import type { HTMLAttributes } from "react";
 
@@ -51,6 +52,11 @@ export interface TableCellRendererProps
   onCommit?: DataItemCommitHandler;
 }
 
+export declare type DateTimeTableAttributes = {
+  timeZone?: string;
+  locale?: string;
+};
+
 export interface TableAttributes {
   columnDefaultWidth?: number;
   columnFormatHeader?: "capitalize" | "uppercase";
@@ -58,6 +64,7 @@ export interface TableAttributes {
   // showHighlightedRow?: boolean;
   rowSeparators?: boolean;
   zebraStripes?: boolean;
+  dateTime?: DateTimeTableAttributes;
 }
 
 /**
@@ -77,7 +84,7 @@ export interface GridConfig extends TableConfig {
 export declare type ColumnTypeFormatting = {
   alignOnDecimals?: boolean;
   decimals?: number;
-  pattern?: string;
+  pattern?: DateTimePattern;
   zeroPad?: boolean;
 };
 
@@ -128,7 +135,19 @@ export interface ValueListRenderer {
   values: string[];
 }
 
-export declare type DateTimeColumnTypeSimple = "date" | "time";
+export declare type DateTimeColumnTypeSimple = "date/time";
+
+type DateTimeColumnType =
+  | DateTimeColumnTypeSimple
+  | (Omit<ColumnTypeDescriptor, "name"> & { name: DateTimeColumnTypeSimple });
+
+export declare type DateTimeColumnDescriptor = Omit<
+  ColumnDescriptor,
+  "type"
+> & {
+  type: DateTimeColumnType;
+};
+
 export declare type ColumnTypeSimple =
   | "string"
   | "number"
@@ -180,9 +199,9 @@ export interface ColumnDescriptor {
   colHeaderLabelRenderer?: string;
   editable?: boolean;
   flex?: number;
-  /** 
+  /**
    Optional additional level(s) of heading to display above label.
-   May span multiple columns, if multiple adjacent columns declare 
+   May span multiple columns, if multiple adjacent columns declare
    same heading at same level.
   */
   heading?: string[];

@@ -1,72 +1,65 @@
+import { DateTimeTableAttributes } from "@finos/vuu-table-types";
 import { DatePattern, DateTimePattern, TimePattern } from "./types";
-
-type DateTimeFormatConfig = {
-  locale?: string;
-  options: Intl.DateTimeFormatOptions;
-  postProcessor?: (s: string) => string;
-};
+import {
+  validateLocaleOrGetDefault,
+  validateTimeZoneOrGetDefault,
+} from "./timezone-and-locale";
 
 // Time format config
-const baseTimeFormatOptions: Intl.DateTimeFormatOptions = {
+const baseTimeFormatConfig: Intl.DateTimeFormatOptions = {
   hour: "2-digit",
   minute: "2-digit",
   second: "2-digit",
 };
-const formatConfigByTimePatterns: Record<TimePattern, DateTimeFormatConfig> = {
-  "hh:mm:ss": {
-    locale: "en-GB",
-    options: { ...baseTimeFormatOptions, hour12: false },
-  },
-  "hh:mm:ss a": {
-    locale: "en-GB",
-    options: { ...baseTimeFormatOptions, hour12: true },
-  },
+const formatConfigByTimePatterns: Record<
+  TimePattern,
+  Intl.DateTimeFormatOptions
+> = {
+  "hh:mm:ss": { ...baseTimeFormatConfig, hour12: false },
+  "hh:mm:ss a": { ...baseTimeFormatConfig, hour12: true },
 };
 
 // Date format config
-const baseDateFormatOptions: Intl.DateTimeFormatOptions = {
+const baseDateFormatConfig: Intl.DateTimeFormatOptions = {
   day: "2-digit",
   month: "2-digit",
   year: "numeric",
 };
-const formatConfigByDatePatterns: Record<DatePattern, DateTimeFormatConfig> = {
-  "dd.mm.yyyy": {
-    locale: "en-GB",
-    options: { ...baseDateFormatOptions },
-    postProcessor: (s) => s.replaceAll("/", "."),
-  },
-  "dd/mm/yyyy": { locale: "en-GB", options: { ...baseDateFormatOptions } },
-  "dd MMM yyyy": {
-    locale: "en-GB",
-    options: { ...baseDateFormatOptions, month: "short" },
-  },
-  "dd MMMM yyyy": {
-    locale: "en-GB",
-    options: { ...baseDateFormatOptions, month: "long" },
-  },
-  "mm/dd/yyyy": { locale: "en-US", options: { ...baseDateFormatOptions } },
-  "MMM dd, yyyy": {
-    locale: "en-US",
-    options: { ...baseDateFormatOptions, month: "short" },
-  },
-  "MMMM dd, yyyy": {
-    locale: "en-US",
-    options: { ...baseDateFormatOptions, month: "long" },
-  },
+const formatConfigByDatePatterns: Record<
+  DatePattern,
+  Intl.DateTimeFormatOptions
+> = {
+  ddmmyyyy: { ...baseDateFormatConfig },
+  ddMMMyyyy: { ...baseDateFormatConfig, month: "short" },
+  ddMMMMyyyy: { ...baseDateFormatConfig, month: "long" },
 };
 
-const formatConfigByDateTimePatterns: Record<
-  DateTimePattern,
-  DateTimeFormatConfig
-> = { ...formatConfigByDatePatterns, ...formatConfigByTimePatterns };
+function getFormatConfig(pattern: DateTimePattern) {
+  if (!pattern.date) {
+    return formatConfigByTimePatterns[pattern.time];
+  } else if (!pattern.time) {
+    return formatConfigByDatePatterns[pattern.date];
+  } else {
+    return {
+      ...formatConfigByDatePatterns[pattern.date],
+      ...formatConfigByTimePatterns[pattern.time],
+    };
+  }
+}
 
-export function formatDate(pattern: DateTimePattern): (d: Date) => string {
-  const { locale, options, postProcessor } =
-    formatConfigByDateTimePatterns[pattern];
-  const dateTimeFormat = Intl.DateTimeFormat(locale, options);
+export function formatDate(
+  pattern: DateTimePattern,
+  { locale, timeZone }: DateTimeTableAttributes = {}
+): (d: Date) => string {
+  const formatConfig = getFormatConfig(pattern);
+  const validatedLocale = validateLocaleOrGetDefault(locale);
+  const validatedTimeZone = validateTimeZoneOrGetDefault(timeZone);
 
-  return (d) => {
-    const dateStr = dateTimeFormat.format(d);
-    return postProcessor ? postProcessor(dateStr) : dateStr;
-  };
+  const dateTimeFormat = Intl.DateTimeFormat(validatedLocale, {
+    ...formatConfig,
+    timeZoneName: !!pattern.showTimeZone ? "short" : undefined,
+    timeZone: validatedTimeZone,
+  });
+
+  return (d) => dateTimeFormat.format(d);
 }
