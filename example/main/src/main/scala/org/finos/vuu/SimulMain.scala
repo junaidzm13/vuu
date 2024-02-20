@@ -90,7 +90,7 @@ object SimulMain extends App with StrictLogging {
     .withModule(EditableModule())
     .withModule(PermissionModule())
     .withModule(BasketModule(omsApi))
-    .withModule(RestModule(HttpClient("url.com", mock = true)))
+    .withModule(RestModule(HttpClient(mock = true), defaultConfig.getConfig("vuu.restModule")))
     .withModule(VirtualTableModule())
     //.withModule(IgniteOrderDataModule(IgniteOrderStore()))
     .withPlugin(VirtualizedTablePlugin)

@@ -11,9 +11,9 @@ import scala.util.Try
 object InstrumentRouter {
   final val DEFAULT_LIMIT = 1000
 
-  def get(vertx: Vertx): Router = {
+  def apply(vertx: Vertx): Router = {
     val router = Router.router(vertx)
-    router.get().handler(getAllHandler)
+    router.get("/instruments").handler(getAllHandler)
     router
   }
 

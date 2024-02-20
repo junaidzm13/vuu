@@ -1,5 +1,6 @@
 package org.finos.vuu.example.rest.module
 
+import com.typesafe.config.Config
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{TableDef, ViewPortDef}
@@ -14,7 +15,7 @@ import org.finos.vuu.net.rpc.RpcHandler
 object RestModule {
   private final val NAME: String = "REST"
 
-  def apply(httpClient: HttpClient)(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
+  def apply(httpClient: HttpClient, config: Config)(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
     ModuleFactory.withNamespace(NAME)
       .addTable(
         TableDef(
@@ -22,7 +23,10 @@ object RestModule {
           keyField = "id",
           columns = Columns.fromNames("id".long(), "ric".string(), "isin".string(), "currency".string())
         ),
-        (table, _) => new InstrumentsProvider(table, InstrumentServiceClient(httpClient)),
+        (table, _) => new InstrumentsProvider(
+          table,
+          InstrumentServiceClient(httpClient, config.getString("instrumentServiceUrl"))
+        ),
         (table, _, _, _) => ViewPortDef(columns = table.getTableDef.columns, service = new DefaultRpcHandler)
       ).asModule()
   }

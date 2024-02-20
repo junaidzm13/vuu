@@ -18,18 +18,19 @@ object FakeHttpClient {
 }
 
 class FakeHttpClient extends HttpClient {
-  override def get(requestUri: String): Handler[ClientResponse] => Unit = {
-    val response = requestUri match {
-      case EndpointRegex.instruments(_, limit) =>
-        val instruments = RandomInstrument.create(size = limit.toIntOption.getOrElse(DEFAULT_LIMIT))
-        Success(ClientResponse(toRawJson(instruments), 200))
+  override def get(request: HttpRequest): Handler[ClientResponse] => Unit = {
+    val requestPath = request.requestPath.getOrElse("")
+    val response = requestPath match {
+      case EndpointRegex.instruments(_ *) =>
+        val count = request.queryParams.get("limit").flatMap(_.toIntOption).getOrElse(DEFAULT_LIMIT)
+        Success(ClientResponse(toRawJson(RandomInstrument.create(size = count)), 200))
       case _ =>
-        Failure(UnsupportedEndpointException(s"Endpoint $requestUri not supported by FakeHttpClient"))
+        Failure(UnsupportedEndpointException(s"Endpoint $requestPath not supported by FakeHttpClient"))
     }
     handler => handler(response)
   }
 }
 
 object EndpointRegex {
-  val instruments: Regex = "^/instruments/{0,2}\\??(limit=(\\d+))?$".r
+  val instruments: Regex = "^/instruments/{0,2}$".r
 }

@@ -17,7 +17,7 @@ class HttpClientTest extends AnyFeatureSpec with BeforeAndAfterAll with Matchers
   private final val PORT = 8091
   private final val HOST = "localhost"
 
-  private val client = HttpClient(s"http://$HOST:$PORT")
+  private val client = HttpClient()
   private val vertx = Vertx.vertx()
 
   override def beforeAll(): Unit = {
@@ -32,10 +32,13 @@ class HttpClientTest extends AnyFeatureSpec with BeforeAndAfterAll with Matchers
   }
 
   Feature("client can connect to the demo-server") {
+    val requestBuilder = HttpRequestBuilder(s"http://$HOST:$PORT/instrument-service")
+
     Scenario("can return expected output when GET to a correct endpoint") {
       var res: Try[ClientResponse] = null
 
-      client.get("/instruments?limit=3").apply {res = _}
+      val req = requestBuilder.withRequestPath("/instruments").withQueryParam("limit" -> "3").build()
+      client.get(req).apply {res = _}
 
       eventually(timeout(Span(2, Seconds)))(res.get.body should include regex jsonArrayRegex(3))
       JsonUtil.fromJson[List[Instrument]](res.get.body).head shouldBe a [Instrument]
@@ -44,7 +47,7 @@ class HttpClientTest extends AnyFeatureSpec with BeforeAndAfterAll with Matchers
     Scenario("returns 404 when GET to a non-existent endpoint ") {
       var res: Try[ClientResponse] = null
 
-      client.get("/hello-world").apply { res = _ }
+      client.get(requestBuilder.withRequestPath("/hello-world").build()).apply { res = _ }
 
       eventually(timeout(Span(2, Seconds)))(res.get.statusCode shouldEqual 404)
     }

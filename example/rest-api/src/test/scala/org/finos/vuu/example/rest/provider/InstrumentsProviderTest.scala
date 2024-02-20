@@ -7,18 +7,27 @@ import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.example.rest.InstrumentServiceClient
 import org.finos.vuu.example.rest.TestUtils.testInstrument
-import org.finos.vuu.example.rest.client.{ClientResponse, HttpClient}
+import org.finos.vuu.example.rest.client.{ClientResponse, HttpClient, HttpRequestBuilder}
 import org.finos.vuu.example.rest.provider.InstrumentsProvider.INSTRUMENTS_COUNT
+import org.finos.vuu.example.rest.provider.InstrumentsProviderTest.{BASE_URL, HTTP_REQUEST}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
 import scala.util.{Failure, Success}
 
+object InstrumentsProviderTest {
+  private val BASE_URL = "base-url.com"
+  private val HTTP_REQUEST = HttpRequestBuilder(BASE_URL)
+    .withRequestPath("/instruments")
+    .withQueryParam("limit" -> INSTRUMENTS_COUNT.toString)
+    .build()
+}
+
 class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFactory {
   private implicit val clock: Clock = new TestFriendlyClock(10001)
   private val mockHttpClient = mock[HttpClient]
-  private val instrumentsClient = InstrumentServiceClient(mockHttpClient)
+  private val instrumentsClient = InstrumentServiceClient(mockHttpClient, BASE_URL)
 
   private val mockTable = stub[DataTable]
   (mockTable.getTableDef _).when().returns(testTableDef())
@@ -37,7 +46,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
       val mockClientResponse = Success(ClientResponse(JsonUtil.toRawJson(List(instrument)), 200))
 
       (mockHttpClient.get _)
-        .expects(s"/instruments?limit=$INSTRUMENTS_COUNT")
+        .expects(HTTP_REQUEST)
         .returns(_(mockClientResponse))
 
       provider.doStart()
@@ -49,7 +58,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
       val mockClientResponse = Success(ClientResponse(body = "Some body", statusCode = 200))
 
       (mockHttpClient.get _)
-        .expects(s"/instruments?limit=$INSTRUMENTS_COUNT")
+        .expects(HTTP_REQUEST)
         .returns(_(mockClientResponse))
 
       provider.doStart()
@@ -61,7 +70,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
       val mockClientResponse = Failure(new Exception("Some error"))
 
       (mockHttpClient.get _)
-        .expects(s"/instruments?limit=$INSTRUMENTS_COUNT")
+        .expects(HTTP_REQUEST)
         .returns(_(mockClientResponse))
 
       provider.doStart()
