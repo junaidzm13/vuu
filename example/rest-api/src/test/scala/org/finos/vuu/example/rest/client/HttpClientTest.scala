@@ -52,4 +52,18 @@ class HttpClientTest extends AnyFeatureSpec with BeforeAndAfterAll with Matchers
       eventually(timeout(Span(2, Seconds)))(res.get.statusCode shouldEqual 404)
     }
   }
+
+  Feature("Connecting to non-existent server") {
+    Scenario("returns failure with exception when GET to a non-existent server") {
+      var res: Try[ClientResponse] = null
+
+      val req = HttpRequestBuilder(baseUrl = "non-existent").withRequestPath("/hello-world").build()
+      client.get(req).apply {
+        res = _
+      }
+
+      eventually(timeout(Span(2, Seconds)))(res.isFailure shouldEqual true)
+      res.failed.get shouldBe a[Exception]
+    }
+  }
 }
