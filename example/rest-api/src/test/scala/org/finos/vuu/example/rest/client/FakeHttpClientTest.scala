@@ -16,6 +16,8 @@ class FakeHttpClientTest extends AnyFeatureSpec with Matchers {
 
   Feature("get") {
      Scenario("supports /instruments endpoint") {
+
+       fakeHttpClient.register(Endpoints.getInstruments)
        var response: Try[ClientResponse] = null
 
        val req = requestBuilder.withRequestPath("/instruments").withQueryParam("limit" -> "2").build()
@@ -26,6 +28,7 @@ class FakeHttpClientTest extends AnyFeatureSpec with Matchers {
      }
 
     Scenario("returns 404 when endpoint not found") {
+
       var response: Try[ClientResponse] = null
 
       val req = requestBuilder.withRequestPath("/endpoint-not-found").build()
@@ -36,6 +39,8 @@ class FakeHttpClientTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("`/identity` endpoint returns passed body and status code query param") {
+
+      fakeHttpClient.register(Endpoints.identity)
       var response: Try[ClientResponse] = null
 
       val req = requestBuilder
@@ -52,6 +57,7 @@ class FakeHttpClientTest extends AnyFeatureSpec with Matchers {
 
     Scenario("`/identity` endpoint returns passed body query param and status code query param " +
       "WHEN no body present in the request") {
+      fakeHttpClient.register(Endpoints.identity)
       var response: Try[ClientResponse] = null
 
       val req = requestBuilder
@@ -69,6 +75,7 @@ class FakeHttpClientTest extends AnyFeatureSpec with Matchers {
     }
 
      Scenario("`/failure` endpoint acts as if exception occurred when making request") {
+       fakeHttpClient.register(Endpoints.failure)
        var response: Try[ClientResponse] = null
 
        val req = requestBuilder.withRequestPath("/failure").build()
