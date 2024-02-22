@@ -6,6 +6,7 @@ import org.finos.vuu.example.rest.client.HttpClient.Handler
 import org.finos.vuu.example.rest.demoserver.InstrumentRouter.DEFAULT_LIMIT
 import org.finos.vuu.example.rest.model.RandomInstrument
 
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
@@ -20,19 +21,16 @@ object FakeHttpClient {
 
 class FakeHttpClient extends HttpClient {
 
-  private val endpoints =  ListBuffer.empty[Endpoint]
+  private val endpoints =  mutable.HashMap.empty[String, ClientResponse]
 
-  def register(endpoint: Endpoint): Unit = {
-    endpoints += endpoint
+  def register(url:String, response: ClientResponse): Unit = {
+    endpoints += (url -> response)
   }
 
   override def get(request: HttpRequest): Handler[ClientResponse] => Unit = {
     val requestPath = request.requestPath.getOrElse("")
-    val response = endpoints
-      .filter(_.regex.matches(requestPath))
-      .collectFirst(_.handler(request))
-      .getOrElse(Success(ClientResponse("Resource not found", 404)))
-    handler => handler(response)
+    val response = endpoints.getOrElse(requestPath, ClientResponse("Resource not found", 404))
+    handler => handler(Success(response))
   }
 }
 
