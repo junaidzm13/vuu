@@ -1,6 +1,7 @@
 package org.finos.vuu.example.ignite
 
 import org.finos.vuu.core.table.ColumnValueProvider
+import org.finos.vuu.example.ignite.store.IgniteOrderStore
 
 
 class IgniteColumnValueProvider(final val igniteStore: IgniteOrderStore) extends ColumnValueProvider {

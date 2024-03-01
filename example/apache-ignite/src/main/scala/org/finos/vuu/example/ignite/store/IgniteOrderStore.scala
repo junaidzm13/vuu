@@ -1,4 +1,4 @@
-package org.finos.vuu.example.ignite
+package org.finos.vuu.example.ignite.store
 
 import com.typesafe.scalalogging.StrictLogging
 import org.apache.ignite.cache.CachePeekMode
@@ -6,6 +6,7 @@ import org.apache.ignite.cache.query._
 import org.apache.ignite.cluster.ClusterState
 import org.apache.ignite.{IgniteCache, Ignition}
 import org.finos.vuu.core.module.simul.model.{ChildOrder, OrderStore, ParentOrder}
+import org.finos.vuu.example.ignite.IgniteLocalConfig
 import org.finos.vuu.example.ignite.schema.ChildOrderEntityObject
 
 import java.util
@@ -36,7 +37,7 @@ object IgniteOrderStore {
 }
 
 class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrder],
-                       private val childOrderCache: IgniteCache[Int, ChildOrder]) extends OrderStore with StrictLogging {
+                       private val childOrderCache: IgniteCache[Int, ChildOrder]) extends OrderStore with IgniteStore[ChildOrder] with StrictLogging {
 
   def storeParentOrder(parentOrder: ParentOrder): Unit = {
     parentOrderCache.put(parentOrder.id, parentOrder)
@@ -100,7 +101,7 @@ class IgniteOrderStore(private val parentOrderCache: IgniteCache[Int, ParentOrde
     totalCount
   }
 
-  def findChildOrder(sqlFilterQueries: String, sqlSortQueries: String, rowCount: Int, startIndex: Long): Iterator[ChildOrder] = {
+  override def findEntities(sqlFilterQueries: String, sqlSortQueries: String, rowCount: Int, startIndex: Long): Iterator[ChildOrder] = {
     val whereClause = if(sqlFilterQueries == null || sqlFilterQueries.isEmpty) "" else s" where $sqlFilterQueries"
     val orderByClause = if(sqlSortQueries == null || sqlSortQueries.isEmpty) " order by id" else s" order by $sqlSortQueries"
     val query = new SqlFieldsQuery(s"select * from ChildOrder$whereClause$orderByClause limit ? offset ?")

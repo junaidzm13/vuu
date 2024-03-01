@@ -4,7 +4,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.module.simul.model.{ChildOrder, OrderStore}
 import org.finos.vuu.core.module.simul.provider.{ParentChildOrdersModel, SeededRandomNumbers}
-import org.finos.vuu.example.ignite.IgniteOrderStore
+import org.finos.vuu.example.ignite.store.IgniteOrderStore
 
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.LongAdder

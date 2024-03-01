@@ -1,11 +1,13 @@
 package org.finos.vuu.example.ignite.provider
 
 import org.apache.ignite.Ignite
+import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.core.module.simul.model.{ChildOrder, ParentOrder}
 import org.finos.vuu.core.sort.SortDirection
 import org.finos.vuu.example.ignite.module.IgniteOrderDataModule
 import org.finos.vuu.example.ignite.schema.ChildOrderEntityObject
-import org.finos.vuu.example.ignite.{IgniteOrderStore, TestUtils}
+import org.finos.vuu.example.ignite.TestUtils
+import org.finos.vuu.example.ignite.store.{IgniteOrderStore, IgniteStore}
 import org.finos.vuu.net.FilterSpec
 import org.finos.vuu.util.schema.SchemaMapper
 import org.scalatest.funsuite.AnyFunSuiteLike
@@ -13,10 +15,12 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.BeforeAndAfterAll
 
 class IgniteOrderDataQueryFunctionalTest extends AnyFunSuiteLike with BeforeAndAfterAll with Matchers {
+  private implicit val clock: Clock = new TestFriendlyClock(1_000)
+
   private val schemaMapper = SchemaMapper(ChildOrderEntityObject.getSchema, IgniteOrderDataModule.columns, IgniteOrderDataProvider.columnNameByExternalField)
   private var ignite: Ignite = _
   private var orderStore: IgniteOrderStore = _
-  private var dataQuery: IgniteOrderDataQuery = _
+  private var dataQuery: IgniteOrderDataQuery[ChildOrder] = _
 
   override def beforeAll(): Unit = {
     ignite = TestUtils.setupIgnite(testName = this.toString)
@@ -39,9 +43,9 @@ class IgniteOrderDataQueryFunctionalTest extends AnyFunSuiteLike with BeforeAndA
     val filterSpec = FilterSpec("orderId > 1 and ric starts \"ABC\"")
     val sortSpec = Map("price" -> SortDirection.Ascending)
 
-    val res = dataQuery.fetch(filterSpec, sortSpec, startIndex = 0, rowCount = 3)
+    val res = dataQuery.fetch(FetchParams(filterSpec, sortSpec, startIndex = 0, rowCount = 3))
 
-    res.toList shouldEqual List(testOrder3, testOrder2)
+    res.toList shouldEqual List(testOrder3, testOrder2).map(schemaMapper.toInternalRowMap)
   }
 
   private def givenChildOrdersExist(childOrders: ChildOrder*): Unit = {

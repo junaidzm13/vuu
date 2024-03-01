@@ -3,6 +3,7 @@ package org.finos.vuu.example.ignite
 import org.apache.ignite.cache.query.IndexQueryCriteriaBuilder
 import org.apache.ignite.{Ignite, IgniteCache}
 import org.finos.vuu.core.module.simul.model.{ChildOrder, ParentOrder}
+import org.finos.vuu.example.ignite.store.IgniteOrderStore
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.scalatest.funsuite.AnyFunSuiteLike
 import org.scalatest.matchers.should.Matchers
@@ -93,7 +94,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfterAll with B
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 6)
 
     val filterQueries = "parentId = 2"
-    val childOrder = orderStore.findChildOrder(filterQueries, emptySortQueries, 2, 1).toList
+    val childOrder = orderStore.findEntities(filterQueries, emptySortQueries, 2, 1).toList
 
     assert(childOrder != null)
     assert(childOrder.size == 2)
@@ -114,7 +115,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfterAll with B
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 6, ric = "VOD.L")
 
     val filterQueries = "ric = \'VOD.L\'"
-    val childOrder = orderStore.findChildOrder(filterQueries, emptySortQueries, 100, 0).toList
+    val childOrder = orderStore.findEntities(filterQueries, emptySortQueries, 100, 0).toList
 
     assert(childOrder != null)
     assert(childOrder.size == 6)
@@ -128,7 +129,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfterAll with B
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 4)
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 5)
 
-    val childOrder = orderStore.findChildOrder(emptyFilterQueries, emptySortQueries, 100, 0).toList
+    val childOrder = orderStore.findEntities(emptyFilterQueries, emptySortQueries, 100, 0).toList
 
     assert(childOrder != null)
     assert(childOrder.size == 3)
@@ -143,7 +144,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfterAll with B
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 2)
 
     val sortByValues = "id ASC"
-    val childOrder = orderStore.findChildOrder(emptyFilterQueries, sortByValues, 100, 0).toList
+    val childOrder = orderStore.findEntities(emptyFilterQueries, sortByValues, 100, 0).toList
 
     assert(childOrder != null)
     assert(childOrder.size == 3)
@@ -159,7 +160,7 @@ class IgniteOrderStoreTest extends AnyFunSuiteLike with BeforeAndAfterAll with B
     parentOrder2 = GivenParentHasChildOrder(parentOrder2, 2)
 
     val sortByValues = "parentId DESC, id ASC"
-    val childOrder = orderStore.findChildOrder(emptyFilterQueries, sortByValues, 100, 0).toList
+    val childOrder = orderStore.findEntities(emptyFilterQueries, sortByValues, 100, 0).toList
 
     assert(childOrder != null)
     assert(childOrder.size == 3)

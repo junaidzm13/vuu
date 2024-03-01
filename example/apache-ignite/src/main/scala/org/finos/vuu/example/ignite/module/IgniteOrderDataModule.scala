@@ -5,8 +5,9 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{Column, Columns}
-import org.finos.vuu.example.ignite.{IgniteColumnValueProvider, IgniteOrderStore}
+import org.finos.vuu.example.ignite.IgniteColumnValueProvider
 import org.finos.vuu.example.ignite.provider.IgniteOrderDataProvider
+import org.finos.vuu.example.ignite.store.IgniteOrderStore
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
 

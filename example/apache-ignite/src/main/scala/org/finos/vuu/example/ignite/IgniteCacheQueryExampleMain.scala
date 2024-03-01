@@ -1,5 +1,7 @@
 package org.finos.vuu.example.ignite
 
+import org.finos.vuu.example.ignite.store.IgniteOrderStore
+
 import java.time.{Duration, Instant}
 
 /**
