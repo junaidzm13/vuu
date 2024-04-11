@@ -16,5 +16,5 @@
     }
   },
 
-  "forwardPorts": [5173, 8443]
+  "forwardPorts": [5173, 8090, 8443]
 }
