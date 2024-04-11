@@ -1,6 +1,5 @@
 {
   "name": "VUU",
-//  "build": { "dockerfile": "Dockerfile" },
   "image": "mcr.microsoft.com/devcontainers/java:17",
 
   "features": {
@@ -16,5 +15,7 @@
     }
   },
 
-  "forwardPorts": [5173, 8090, 8443]
+  "postCreateCommand": "chmod u+x ./.devcontainer/install-dependencies.sh && ./.devcontainer/install-dependencies.sh",
+
+  "forwardPorts": [5173, 8443, 8090]
 }
