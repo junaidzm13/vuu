@@ -1,7 +1,7 @@
 {
   "name": "VUU",
-  "build": { "dockerfile": "Dockerfile" },
-  //  "image": "mcr.microsoft.com/devcontainers/java:17",
+//  "build": { "dockerfile": "Dockerfile" },
+  "image": "mcr.microsoft.com/devcontainers/java:17",
 
   "features": {
     "ghcr.io/devcontainers/features/node:1": { "version": "v18.17.0" }
