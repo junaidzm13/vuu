@@ -1,6 +1,6 @@
 {
   "name": "VUU",
-  "image": "mcr.microsoft.com/devcontainers/java:17",
+  "build": {"dockerfile": "Dockerfile"},
 
   "features": {
     "ghcr.io/devcontainers/features/node:1": { "version": "v18.17.0" }
@@ -11,11 +11,9 @@
     "vscode": {
       // Set *default* container specific settings.json values on container create.
       "settings": {},
-      "extensions": ["Orta.vscode-jest", "dbaeumer.vscode-eslint"],
+      "extensions": ["Orta.vscode-jest", "dbaeumer.vscode-eslint"]
     }
   },
-
-  "postCreateCommand": "chmod u+x ./.devcontainer/install-dependencies.sh && ./.devcontainer/install-dependencies.sh",
 
   "forwardPorts": [5173, 8443, 8090]
 }
