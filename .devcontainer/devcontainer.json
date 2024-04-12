@@ -19,7 +19,7 @@
     }
   },
 
-  "postCreateCommand": "chmod u+x ./.devcontainer/install-sdk-packages.sh && ./.devcontainer/install-sdk-packages.sh",
+//  "postCreateCommand": "chmod u+x ./.devcontainer/install-sdk-packages.sh && ./.devcontainer/install-sdk-packages.sh",
 
   "forwardPorts": [5173, 8443, 8090]
 }
